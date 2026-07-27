@@ -50,19 +50,3 @@ All colors, fonts, and spacing are defined once as CSS variables at the
 top of `css/style.css` (`:root { ... }`). Change a value there and it
 updates everywhere.
 
-## Crimp Conversion math
-
-`tools/crimp-conversion.html` interpolates linearly between the
-reference points defined in the `REFERENCE_POINTS` array in that file's
-script:
-
-| Edge depth | Load % |
-|---|---|
-| 0 mm  | 0%   |
-| 5 mm  | 50%  |
-| 10 mm | 75%  |
-| 15 mm | 90%  |
-| 20 mm | 100% |
-
-To change or add reference values, edit that one array — the table
-shown on the page and the calculation both read from it automatically.
