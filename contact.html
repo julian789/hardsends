@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact — Hard Sends</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<script src="navbar.js"></script>
+
+<main>
+  <section class="hero">
+    <div class="container">
+      <p class="eyebrow">Contact</p>
+      <h1>Get in touch</h1>
+      <p class="lede">
+        Questions, bug reports, or a tool you'd like to see next —
+        send it over.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container" style="max-width:520px;">
+      <!--
+        No backend is wired up yet. When one exists, point the form's
+        `action` at it (or hook the submit event in JS) — everything
+        else can stay as-is.
+      -->
+      <form id="contact-form">
+        <div class="field">
+          <label for="name">Name</label>
+          <input id="name" name="name" type="text" required>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required>
+        </div>
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" rows="5" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Send message</button>
+        <p id="contact-status" style="margin-top:14px; color:var(--chalk-60); font-size:0.9rem;"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span>© 2026 Hard Sends</span>
+    <span>Built for climbers, by climbers.</span>
+  </div>
+</footer>
+
+<script src="main.js"></script>
+<script>
+  // Placeholder submit handler — swap this out once a real backend/email
+  // service is wired up. Keeps the page functional in the meantime.
+  document.getElementById("contact-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    document.getElementById("contact-status").textContent =
+      "Thanks — this form isn't connected to anything yet, but your message was captured client-side.";
+    e.target.reset();
+  });
+</script>
+</body>
+</html>

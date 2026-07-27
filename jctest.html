@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Beta Sheet — Climbing Strength Test</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{padding-bottom:120px;}
+
+  .shell{
+    display:grid;
+    grid-template-columns:64px minmax(0, 1fr);
+    gap:24px;
+    max-width:var(--page-max);
+    margin:0 auto;
+    padding:0 24px;
+  }
+  .route-line{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .route-line::before{
+    content:"";
+    position:absolute;
+    top:8px;
+    bottom:60px;
+    left:50%;
+    width:2px;
+    background:repeating-linear-gradient(to bottom, var(--stone-700) 0 6px, transparent 6px 12px);
+    transform:translateX(-50%);
+  }
+  .hold{
+    position:sticky;
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    border:1px solid var(--stone-700);
+    background:var(--stone-800);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:var(--font-mono);
+    font-size:13px;
+    font-weight:700;
+    color:var(--chalk-60);
+    margin:120px 0 0;
+    z-index:2;
+    text-decoration:none;
+    transition:transform .2s ease, background-color .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .hold:first-of-type{margin-top:6px;}
+  .hold.done{
+    background:var(--hold);
+    border-color:var(--hold);
+    color:var(--stone-900);
+  }
+
+  main{min-height:60vh;}
+
+  header.hero{
+    padding:96px 0 64px;
+    border-bottom:1px solid var(--stone-700);
+  }
+  .eyebrow{
+    margin:0 0 12px;
+    color:var(--hold);
+  }
+  h1{
+    font-size:clamp(2.6rem, 6vw, 4.8rem);
+    max-width:11ch;
+  }
+  .hero p.sub,
+  .test-desc,
+  .results-note,
+  .results-total .note,
+  .section-item .sub,
+  .field .hint,
+  .warn,
+  footer.credits,
+  .breakdown{
+    color:var(--chalk-60);
+  }
+  .hero p.sub{
+    max-width:56ch;
+    font-size:1.05rem;
+    margin:0 0 32px;
+  }
+  .bw-card{
+    background:var(--stone-800);
+    border:1px solid var(--stone-700);
+    border-radius:var(--radius);
+    padding:22px 24px;
+    display:flex;
+    align-items:end;
+    gap:18px;
+    flex-wrap:wrap;
+    max-width:520px;
+  }
+  .bw-card label{margin-bottom:6px;}
+  .bw-card input{width:140px;}
+
+  section.test{
+    padding:64px 0;
+    border-bottom:1px solid var(--stone-700);
+    scroll-margin-top:24px;
+  }
+  .test-head{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-bottom:8px;
+  }
+  .tape{
+    display:inline-flex;
+    align-items:center;
+    background:var(--hold);
+    color:var(--stone-900);
+    font-family:var(--font-mono);
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    padding:4px 10px;
+    border-radius:999px;
+  }
+  h2{
+    font-size:clamp(1.9rem, 4vw, 2.8rem);
+    margin:0;
+  }
+  .test-desc{max-width:64ch; margin:0 0 28px;}
+
+  .panel,
+  .results-card{
+    background:var(--stone-800);
+    border:1px solid var(--stone-700);
+    border-radius:var(--radius);
+    padding:24px;
+  }
+  .panel{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:24px 32px;
+  }
+  .field{display:flex; flex-direction:column; gap:8px;}
+  .field.span2{grid-column:1/-1;}
+  .field label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.09em;
+    color:var(--chalk-60);
+  }
+  .field .hint{font-size:12px; margin-top:-4px;}
+
+  input[type=number],
+  select{
+    background:var(--stone-900);
+    border:1px solid var(--stone-700);
+    color:var(--chalk-100);
+    border-radius:var(--radius);
+    padding:11px 12px;
+    font-family:var(--font-body);
+    font-size:0.95rem;
+    width:100%;
+  }
+  input[type=number]:focus,
+  select:focus,
+  button.toggle:focus{
+    outline:2px solid var(--hold);
+    outline-offset:1px;
+  }
+
+  .toggle-row{display:flex; gap:8px; flex-wrap:wrap;}
+  button.toggle{
+    flex:1;
+    min-width:120px;
+    background:transparent;
+    border:1px solid var(--stone-700);
+    color:var(--chalk-60);
+    padding:11px 10px;
+    border-radius:var(--radius);
+    font-family:var(--font-body);
+    font-size:13.5px;
+    font-weight:500;
+    cursor:pointer;
+    transition:background-color .15s ease, border-color .15s ease, color .15s ease;
+  }
+  button.toggle.active{
+    background:var(--hold);
+    color:var(--stone-900);
+    border-color:var(--hold);
+    font-weight:600;
+  }
+
+  .result-row{
+    grid-column:1/-1;
+    margin-top:4px;
+    padding-top:22px;
+    border-top:1px solid var(--stone-700);
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .result-row .label,
+  .results-label,
+  .section-item .name{
+    font-family:var(--font-mono);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    color:var(--chalk-60);
+  }
+  .result-row .score{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:38px;
+    color:var(--hold);
+  }
+  .result-row .score .unit{font-family:var(--font-mono); font-size:14px; color:var(--chalk-60); font-weight:400; margin-left:6px;}
+  .warn{font-family:var(--font-mono); font-size:12px;}
+
+  #finalresults{padding-top:36px;}
+  .results-wrap{
+    display:grid;
+    grid-template-columns:minmax(0, 1.1fr) minmax(280px, .9fr);
+    gap:24px;
+    align-items:start;
+  }
+  .results-card h3{
+    margin:0 0 10px;
+    font-size:2rem;
+    line-height:1;
+  }
+  .results-total{
+    display:flex;
+    align-items:baseline;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+  }
+  .results-total .value{
+    font-family:var(--font-display);
+    font-weight:900;
+    font-size:clamp(52px, 7vw, 82px);
+    line-height:.92;
+    color:var(--hold);
+  }
+  .results-band{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    margin-top:4px;
+    padding:8px 12px;
+    border-radius:999px;
+    background:rgba(200,242,77,0.12);
+    color:var(--chalk-100);
+    font-family:var(--font-mono);
+    font-size:12px;
+  }
+  .results-band b{color:var(--hold); font-weight:700;}
+  .results-table{
+    width:100%;
+    border-collapse:collapse;
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    margin-top:12px;
+  }
+  .results-table th,
+  .results-table td{
+    text-align:left;
+    padding:10px 0;
+    border-bottom:1px solid var(--stone-700);
+  }
+  .results-table th{
+    color:var(--chalk-60);
+    font-weight:500;
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  .results-table tr.current td{
+    color:var(--chalk-100);
+    background:linear-gradient(to right, rgba(200,242,77,0.12), transparent 82%);
+  }
+  .results-table tr.current td:first-child{padding-left:10px; border-radius:8px 0 0 8px;}
+  .section-list{display:grid; gap:12px; margin-top:12px;}
+  .section-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:18px;
+    padding:14px 0;
+    border-bottom:1px solid var(--stone-700);
+  }
+  .section-item:last-child{border-bottom:none; padding-bottom:0;}
+  .section-item .score{
+    font-family:var(--font-display);
+    font-size:28px;
+    line-height:1;
+    color:var(--chalk-100);
+    margin-top:4px;
+  }
+  .section-item .meta{text-align:right; min-width:110px;}
+  .section-item .rank{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:84px;
+    padding:6px 10px;
+    border-radius:999px;
+    background:rgba(241,237,227,0.08);
+    color:var(--chalk-100);
+    font-family:var(--font-mono);
+    font-size:12px;
+  }
+  .section-item .rank.best{background:rgba(200,242,77,0.18); color:#ebffd0;}
+  .section-item .rank.worst{background:rgba(233,196,106,0.16); color:#fff0c7;}
+  .section-item .sub{
+    margin-top:8px;
+    font-size:12px;
+    line-height:1.45;
+  }
+
+  footer.scorecard{
+    position:sticky;
+    bottom:0;
+    background:rgba(22,24,26,0.92);
+    backdrop-filter:blur(6px);
+    border-top:1px solid var(--stone-700);
+    padding:18px 0;
+    margin-top:0;
+  }
+  .scorecard-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+  .breakdown{
+    display:flex;
+    gap:22px;
+    flex-wrap:wrap;
+    font-family:var(--font-mono);
+    font-size:12.5px;
+  }
+  .breakdown span b{color:var(--chalk-100); font-weight:600;}
+  .grand{display:flex; align-items:baseline; gap:10px;}
+  .grand .label{font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--chalk-60);}
+  .grand .num{font-family:var(--font-display); font-weight:900; font-size:44px; color:var(--hold);}
+
+  footer.credits{
+    text-align:center;
+    padding:26px 0 40px;
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    letter-spacing:.05em;
+  }
+
+  @media (max-width:760px){
+    .shell{grid-template-columns:1fr;}
+    .route-line{display:none;}
+    .panel,
+    .results-wrap{grid-template-columns:1fr;}
+    .section-item{flex-direction:column;}
+    .section-item .meta{text-align:left; min-width:0;}
+    .scorecard-inner{align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+
+<script src="navbar.js"></script>
+
+<div class="shell">
+  <nav class="route-line" aria-hidden="true">
+    <a href="#test1" class="hold" data-c="1">01</a>
+    <a href="#test2" class="hold" data-c="2">02</a>
+    <a href="#test3" class="hold" data-c="3">03</a>
+    <a href="#test4" class="hold" data-c="4">04</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <p class="eyebrow">Finger strength scorecard · v1</p>
+      <h1>Julian's Bouldering<br> Strength Test</h1>
+      <p class="sub">Four tests, one topo. Log your bodyweight once, then work down the wall — crimp strength, pulling power, core tension, and campus reach — to build your full strength profile.</p>
+      <div class="bw-card">
+        <div>
+          <label for="bodyweight">Bodyweight</label>
+          <input type="number" id="bodyweight" placeholder="70" step="0.1" min="1">
+        </div>
+        <span style="font-family:var(--mono); color:var(--chalk-dim); font-size:13px;">kg — used across every test below</span>
+      </div>
+    </header>
+
+    <!-- ================= TEST 1: CRIMPING ================= -->
+    <section class="test" id="test1">
+      <div class="test-head"><span class="tape">Test 01</span><h2>Crimp Strength</h2></div>
+      <p class="test-desc">Test on a hangboard (two-arm or one-arm) or with an edge lift. Smaller edges are weighted more heavily — the score adjusts for edge size automatically.</p>
+
+      <div class="panel">
+        <div class="field">
+          <label>Method</label>
+          <div class="toggle-row" id="crimpMethod">
+            <button type="button" class="toggle active" data-val="hang2">2-Arm Hang</button>
+            <button type="button" class="toggle" data-val="hang1">1-Arm Hang</button>
+            <button type="button" class="toggle" data-val="lift">Edge Lift</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="edgeSize">Edge size</label>
+          <input type="number" id="edgeSize" placeholder="20" min="1" step="0.5">
+          <span class="hint">mm</span>
+        </div>
+        <div class="field">
+          <label id="crimpKgLabel" for="crimpKg">Added weight (+) or assistance (−)</label>
+          <input type="number" id="crimpKg" placeholder="0" step="0.1">
+          <span class="hint" id="crimpKgHint">Weight added to your hang, negative if assisted</span>
+        </div>
+        <div class="field">
+          <div class="result-row" style="border:none; padding:0; margin:0;">
+            <span class="warn" id="crimpWarn"></span>
+          </div>
+        </div>
+        <div class="result-row">
+          <span class="label">Crimp score</span>
+          <span class="score" id="crimpScore">—</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TEST 2: PULLING ================= -->
+    <section class="test" id="test2">
+      <div class="test-head"><span class="tape">Test 02</span><h2>Pulling Strength</h2></div>
+      <p class="test-desc">Pick one-arm or two-arm pull-ups, then enter the reps you hit and any weight added. This estimates your 2-arm 1-rep max from a rep-max set.</p>
+
+      <div class="panel">
+        <div class="field">
+          <label>Arm mode</label>
+          <div class="toggle-row" id="pullMode">
+            <button type="button" class="toggle active" data-val="two">2-Arm</button>
+            <button type="button" class="toggle" data-val="one">1-Arm</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="pullReps">Reps performed</label>
+          <input type="number" id="pullReps" placeholder="5" min="1" step="1">
+        </div>
+        <div class="field span2">
+          <label for="pullExtra">Extra weight added</label>
+          <input type="number" id="pullExtra" placeholder="0" step="0.1">
+          <span class="hint">kg, negative if assisted (e.g. band or machine)</span>
+        </div>
+        <div class="result-row">
+          <span class="label">Pulling score</span>
+          <span class="score" id="pullScore">—</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TEST 3: CORE ================= -->
+    <section class="test" id="test3">
+      <div class="test-head"><span class="tape">Test 03</span><h2>Core Strength</h2></div>
+      <p class="test-desc">Hold an L-sit or a front lever for time. Front lever points build up fast early, then taper off past 3 seconds since holding it longer gets disproportionately harder.</p>
+
+      <div class="panel">
+        <div class="field">
+          <label>Position</label>
+          <div class="toggle-row" id="coreType">
+            <button type="button" class="toggle active" data-val="lsit">L-Sit</button>
+            <button type="button" class="toggle" data-val="lever">Front Lever</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="coreDuration">Hold duration</label>
+          <input type="number" id="coreDuration" placeholder="15" min="0" step="0.1">
+          <span class="hint">seconds</span>
+        </div>
+        <div class="result-row">
+          <span class="label">Core score</span>
+          <span class="score" id="coreScore">—</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TEST 4: CAMPUS ================= -->
+    <section class="test" id="test4">
+      <div class="test-head"><span class="tape">Test 04</span><h2>Campus Board</h2></div>
+      <p class="test-desc">Start on rung 1, move to rung A, then reach to rung B. The bigger the final reach and the more even the two moves are, the higher the score.</p>
+
+      <div class="panel">
+        <div class="field">
+          <label for="rungA">Rung A</label>
+          <input type="number" id="rungA" placeholder="4" min="2" max="10" step="1">
+          <span class="hint">2–10, can't be rung 1</span>
+        </div>
+        <div class="field">
+          <label for="rungB">Rung B</label>
+          <input type="number" id="rungB" placeholder="8" min="3" max="11" step="1">
+          <span class="hint">must be higher than rung A, up to 11</span>
+        </div>
+        <div class="field span2">
+          <span class="warn" id="campusWarn"></span>
+        </div>
+        <div class="result-row">
+          <span class="label">Campus score — route: 1 → A → B</span>
+          <span class="score" id="campusScore">—</span>
+        </div>
+      </div>
+    </section>
+    <!--final results -->
+    <section class="test" id="finalresults">
+      <div class="test-head"><span class="tape">Final</span><h2>Results</h2></div>
+      <p class="test-desc">Your final score, the section-by-section breakdown, and a relative ranking of the four tests. Core is doubled here for the cross-test comparison so it can be judged on the same scale as the other tests.</p>
+
+      <div class="results-wrap">
+        <div class="results-card" id="resultsSummary"></div>
+        <div class="results-card" id="resultsSections"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer class="scorecard">
+  <div class="shell" style="display:block; padding:0 24px;">
+    <div class="scorecard-inner">
+      <div class="breakdown">
+        <span>Crimp <b id="bd1">0</b></span>
+        <span>Pull <b id="bd2">0</b></span>
+        <span>Core <b id="bd3">0</b></span>
+        <span>Campus <b id="bd4">0</b></span>
+      </div>
+      <div class="grand">
+        <span class="label">Total</span>
+        <span class="num" id="grandTotal">0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+<footer class="credits">JBST — LOG YOUR NUMBERS, THEN GET BACK ON THE WALL</footer>
+
+<script src="main.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+
+  function setActive(groupEl, val){
+    [...groupEl.children].forEach(b => b.classList.toggle('active', b.dataset.val === val));
+  }
+  function bindToggle(groupId, onChange){
+    const group = $(groupId);
+    let current = group.querySelector('.active').dataset.val;
+    group.addEventListener('click', e=>{
+      const btn = e.target.closest('button.toggle');
+      if(!btn) return;
+      current = btn.dataset.val;
+      setActive(group, current);
+      onChange(current);
+      recalc();
+    });
+    return () => current;
+  }
+
+  const getCrimpMethod = bindToggle('crimpMethod', (val)=>{
+    const label = $('crimpKgLabel');
+    const hint = $('crimpKgHint');
+    if(val === 'lift'){
+      label.textContent = 'Kg lifted';
+      hint.textContent = 'Weight moved directly on the edge lift';
+    } else {
+      label.textContent = 'Added weight (+) or assistance (−)';
+      hint.textContent = 'Weight added to your hang, negative if assisted';
+    }
+  });
+  const getPullMode = bindToggle('pullMode', ()=>{});
+  const getCoreType = bindToggle('coreType', ()=>{});
+
+  function fmt(n){
+    if(!isFinite(n)) return '—';
+    return (Math.round(n*100)/100).toString();
+  }
+
+  const abilityBands = [
+    { max: 20, score: '0–20', ability: '5a–5c' },
+    { max: 35, score: '20–35', ability: '6a–6c' },
+    { max: 50, score: '35–50', ability: '7a–7b+' },
+    { max: 65, score: '50–65', ability: '7c–8b' },
+    { max: 75, score: '65–75', ability: '8c–9a' },
+    { max: Infinity, score: '75+', ability: 'Either cheating or Yves Gravelle' }
+  ];
+
+  function getAbilityBand(total){
+    return abilityBands.find(band => total <= band.max) || abilityBands[abilityBands.length - 1];
+  }
+
+  function renderFinalResults(scores){
+    const total = scores.crimp + scores.pull + scores.core + scores.campus;
+    const band = getAbilityBand(total);
+
+    const sectionData = [
+      { key: 'crimp', label: 'Crimp', raw: scores.crimp, comparable: scores.crimp, note: 'Finger strength on the edge test.' },
+      { key: 'pull', label: 'Pull', raw: scores.pull, comparable: scores.pull, note: 'Pulling power from the max-rep estimate.' },
+      { key: 'core', label: 'Core', raw: scores.core, comparable: scores.core, note: 'Core strength from the l-sit or frontlever test' },
+      { key: 'campus', label: 'Campus', raw: scores.campus, comparable: scores.campus, note: 'Reach and movement quality on the campus board.' }
+    ];
+
+    const sorted = [...sectionData].sort((a, b) => b.comparable - a.comparable);
+    const topComparable = sorted[0]?.comparable ?? 0;
+    const bottomComparable = sorted[sorted.length - 1]?.comparable ?? 0;
+
+    const summaryHtml = `
+      <div class="results-label">Final score</div>
+      <h3>One more look at the total</h3>
+      <div class="results-total">
+        <div class="value">${fmt(total)}</div>
+        <div>
+          <div class="note">Raw points from all four sections.</div>
+          <div class="results-band">Ability range: <b>${band.score}</b> = ${band.ability}</div>
+        </div>
+      </div>
+      <div class="results-note">Compared against the table below, this total lands in the <b>${band.score}</b> bracket.</div>
+      <table class="results-table" aria-label="Total score to ability table">
+        <thead>
+          <tr><th>Total score</th><th>Approximate ability</th></tr>
+        </thead>
+        <tbody>
+          ${abilityBands.map(row => `
+            <tr class="${row === band ? 'current' : ''}">
+              <td>${row.score}</td>
+              <td>${row.ability}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+
+    const sectionsHtml = `
+      <div class="results-label">Section points</div>
+      <h3>Best and worst by test</h3>
+      <div class="section-list">
+        ${sectionData.map(item => {
+          const rank = sorted.findIndex(entry => entry.key === item.key) + 1;
+          const best = item.comparable === topComparable;
+          const worst = item.comparable === bottomComparable;
+          const rankLabel = best ? 'Best' : worst ? 'Worst' : `#${rank} of ${sectionData.length}`;
+          const rankClass = best ? 'best' : worst ? 'worst' : '';
+          const comparisonNote = `Comparable score: ${fmt(item.comparable)}.`;
+
+          return `
+            <div class="section-item">
+              <div>
+                <div class="name">${item.label}</div>
+                <div class="score">${fmt(item.raw)} pts</div>
+                <div class="sub">${item.note}</div>
+              </div>
+              <div class="meta">
+                <div class="rank ${rankClass}">${rankLabel}</div>
+                <div class="sub">${comparisonNote}</div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+
+    $('resultsSummary').innerHTML = summaryHtml;
+    $('resultsSections').innerHTML = sectionsHtml;
+  }
+
+  function markHold(n, done){
+    document.querySelector('.hold[data-c="'+n+'"]').classList.toggle('done', done);
+  }
+
+  // ---------- TEST 1: crimping ----------
+  // y = sqrt(20/edge) where x = edge size, y = factor
+  // total = (kg/bw) * y * 10 
+  function calcCrimp(){
+    const bw = parseFloat($('bodyweight').value);
+    const edge = parseFloat($('edgeSize').value);
+    const kgVal = parseFloat($('crimpKg').value);
+    const method = getCrimpMethod();
+    const warn = $('crimpWarn');
+    warn.textContent = '';
+
+    if(!bw || bw <= 0){ $('crimpScore').innerHTML = '—'; markHold(1,false); return; }
+    if(isNaN(edge) || isNaN(kgVal)){ $('crimpScore').innerHTML = '—'; markHold(1,false); return; }
+
+    let kg;
+    if(method === 'hang2') kg = (kgVal + bw) / 2;
+    else if(method === 'hang1') kg = kgVal + bw;
+    else kg = kgVal; // edge lift: taken directly
+
+    if(kg < 0){ warn.textContent = 'Total load is negative — check your inputs.'; }
+
+    const y = Math.pow(20/edge , 0.5);
+    const score = (kg/bw)*y*10;
+    $('crimpScore').innerHTML = fmt(score) + '<span class="unit">pts</span>';
+    $('bd1').textContent = fmt(score);
+    markHold(1, true);
+    return score;
+  }
+
+  // ---------- TEST 2: pulling ----------
+  // per-arm load: 2-arm = (bw+extra)/2, 1-arm = bw+extra
+  // %1RM = 80 + 20 * 2^((1-reps)/2)
+  // per-arm 1RM = per-arm load / (%1RM/100); total 2-arm 1RM = per-arm 1RM * 2
+  // score = ((total 2-arm 1RM / bw)**0.5) * 5
+  function calcPull(){
+    const bw = parseFloat($('bodyweight').value);
+    const reps = parseFloat($('pullReps').value);
+    const extra = parseFloat($('pullExtra').value);
+    const mode = getPullMode();
+
+    if(!bw || bw <= 0 || isNaN(reps) || reps <= 0 || isNaN(extra)){
+      $('pullScore').innerHTML = '—'; markHold(2,false); return;
+    }
+
+    const totalLoad = bw + extra;
+    const perArmLoad = mode === 'two' ? totalLoad/2 : totalLoad;
+    const percent1RM = 80 + 20 * Math.pow(2, (1-reps));
+    const perArm1RM = perArmLoad / (percent1RM/100);
+    const total1RM2Arm = perArm1RM * 2;
+    const strengthRatio = (total1RM2Arm / bw);
+    const score = Math.pow(strengthRatio,1.3)*5;
+
+    $('pullScore').innerHTML = fmt(score) + '<span class="unit">pts</span>';
+    $('bd2').textContent = fmt(score);
+    markHold(2, true);
+    return score;
+  }
+
+  // ---------- TEST 3: core ----------
+  // L-sit: 1pt/sec. Front lever: 10pt/sec up to 3s, then exponentially diminishing.
+  // total score = (raw points / 10)*1.5
+  function calcCore(){
+    const type = getCoreType();
+    const dur = parseFloat($('coreDuration').value);
+    if(isNaN(dur) || dur < 0){ $('coreScore').innerHTML = '—'; markHold(3,false); return; }
+
+    let raw;
+    if(type === 'lsit'){
+      if (dur < 60){
+        raw = dur * 1;
+      }else {raw = 60 }
+      
+    } else {
+      const k = 0.15; // decay constant past 3s
+      if(dur <= 3){
+        raw = 10 * dur;
+      } else {
+        raw = 30 + (10/k) * (1 - Math.exp(-k * (dur - 3)));
+      }
+    }
+    const score = (raw / 10)*1.5;
+    $('coreScore').innerHTML = fmt(score) + '<span class="unit">pts</span>';
+    $('bd3').textContent = fmt(score);
+    markHold(3, true);
+    return score;
+  }
+
+  // ---------- TEST 4: campus ----------
+  // d1 = a-1, d2 = b-a, score = d1 + d2 + min(d1,d2)
+  function calcCampus(){
+    const a = parseInt($('rungA').value, 10);
+    const b = parseInt($('rungB').value, 10);
+    const warn = $('campusWarn');
+    warn.textContent = '';
+
+    if(isNaN(a) || isNaN(b)){ $('campusScore').innerHTML = '—'; markHold(4,false); return; }
+
+    if(a === 1){ warn.textContent = 'Rung A can\'t be 1 — the route already starts there.'; }
+    if(a === b){ warn.textContent = 'Rung A and Rung B can\'t be the same rung.'; }
+    if(b <= a){ warn.textContent = 'Rung B must be higher than Rung A.'; }
+    if(b > 11){ warn.textContent = 'Rung B can\'t be higher than 11.'; }
+    if(a < 2){ warn.textContent = 'Rung A must be 2 or higher.'; }
+
+    if(a < 2 || a === b || b <= a || b > 11){
+      $('campusScore').innerHTML = '—'; markHold(4,false); return;
+    }
+
+    const d1 = a - 1;
+    const d2 = b - a;
+    const score = (d1 + d2 + Math.min(d1, d2))*1.3;
+    $('campusScore').innerHTML = fmt(score) + '<span class="unit">pts</span>';
+    $('bd4').textContent = fmt(score);
+    markHold(4, true);
+    return score;
+  }
+
+  function recalc(){
+    const s1 = calcCrimp() || 0;
+    const s2 = calcPull() || 0;
+    const s3 = calcCore() || 0;
+    const s4 = calcCampus() || 0;
+    const total = s1+s2+s3+s4;
+    $('grandTotal').textContent = fmt(total);
+    renderFinalResults({ crimp: s1, pull: s2, core: s3, campus: s4 });
+  }
+
+  document.querySelectorAll('input[type=number]').forEach(inp=>{
+    inp.addEventListener('input', recalc);
+  });
+
+  recalc();
+})();
+</script>
+
+</body>
+</html>

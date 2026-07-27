@@ -1,0 +1,299 @@
+/* ==========================================================================
+   HARD SENDS — shared stylesheet
+   All pages load this ONE file. Page-specific styles live in a small
+   <style> block at the bottom of each page, scoped to that page's own
+   section id so nothing here needs to change when you add a page.
+   ========================================================================== */
+
+/* ---- Design tokens -------------------------------------------------- */
+:root {
+  /* colors — basalt rock + chalk + a single "hold" accent */
+  --stone-900: #16181a;   /* page background, like wet basalt */
+  --stone-800: #1f2225;   /* raised surfaces / cards */
+  --stone-700: #2b2f33;   /* borders, dividers */
+  --chalk-100: #f1ede3;   /* primary text on dark */
+  --chalk-60:  #b9b3a4;   /* secondary text on dark */
+  --hold:      #c8f24d;   /* signature accent — climbing-hold lime */
+  --hold-dim:  #8fae2f;   /* pressed / hover state of accent */
+  --rope-blue: #4c7f9e;   /* secondary accent — chalk-bag / rope blue */
+  --tape-red:  #e2572b;   /* used sparingly — warning tape / CTA */
+
+  /* type */
+  --font-display: "Archivo Black", "Arial Black", sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* layout */
+  --page-max: 1100px;
+  --radius: 4px;
+  --gap: 24px;
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap");
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--stone-900);
+  color: var(--chalk-100);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  margin: 0 0 0.5em;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--hold);
+}
+
+.container {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ---- Navbar ----------------------------------------------------------
+   Identical markup is copied at the top of every page. If you add a new
+   top-level page, add one <li> here AND in every page's copy of this bar.
+   If you add a page under "Other tools", add one <li> to that dropdown.
+   ------------------------------------------------------------------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(22, 24, 26, 0.92);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--stone-700);
+}
+
+.navbar {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  color: var(--chalk-100);
+}
+.brand span { color: var(--hold); }
+
+.nav-list {
+  list-style: none;
+  display: flex;
+  gap: 28px;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+
+.nav-list > li > a {
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--chalk-60);
+  padding: 8px 2px;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.nav-list > li > a:hover,
+.nav-list > li > a[aria-current="page"] {
+  color: var(--chalk-100);
+  border-bottom-color: var(--hold);
+}
+
+.nav-cta {
+  background: var(--hold);
+  color: var(--stone-900) !important;
+  border-radius: var(--radius);
+  padding: 8px 14px !important;
+  font-weight: 600 !important;
+  border-bottom: none !important;
+}
+.nav-cta:hover { background: var(--chalk-100); }
+
+/* dropdown: "Other tools" */
+.has-dropdown { position: relative; }
+
+.dropdown-toggle {
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--chalk-60);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 2px;
+}
+.dropdown-toggle:hover { color: var(--chalk-100); }
+.dropdown-toggle .caret {
+  border: solid currentColor;
+  border-width: 0 1.5px 1.5px 0;
+  padding: 3px;
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+}
+.has-dropdown[data-open="true"] .caret { transform: rotate(-135deg); }
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 220px;
+  background: var(--stone-800);
+  border: 1px solid var(--stone-700);
+  border-radius: var(--radius);
+  padding: 6px;
+  display: none;
+  flex-direction: column;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+}
+.has-dropdown[data-open="true"] .dropdown-menu { display: flex; }
+
+.dropdown-menu a {
+  display: block;
+  text-decoration: none;
+  color: var(--chalk-60);
+  font-size: 0.9rem;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+}
+.dropdown-menu a:hover { background: var(--stone-700); color: var(--chalk-100); }
+
+.nav-toggle { display: none; }
+
+@media (max-width: 760px) {
+  .nav-toggle {
+    display: block;
+    background: none;
+    border: 1px solid var(--stone-700);
+    color: var(--chalk-100);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    font-family: var(--font-mono);
+  }
+  .nav-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    background: var(--stone-800);
+    border-bottom: 1px solid var(--stone-700);
+    padding: 12px 24px 20px;
+    display: none;
+    gap: 4px;
+  }
+  .navbar[data-mobile-open="true"] .nav-list { display: flex; }
+  .dropdown-menu { position: static; box-shadow: none; margin-top: 4px; }
+}
+
+/* ---- Generic page chrome --------------------------------------------- */
+main { min-height: 60vh; }
+
+.hero {
+  padding: 96px 0 64px;
+  border-bottom: 1px solid var(--stone-700);
+}
+.hero h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); max-width: 16ch; }
+.hero p.lede {
+  max-width: 56ch;
+  color: var(--chalk-60);
+  font-size: 1.05rem;
+}
+
+.section { padding: 64px 0; border-bottom: 1px solid var(--stone-700); }
+.section:last-of-type { border-bottom: none; }
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--gap);
+  margin-top: 32px;
+}
+
+.card {
+  background: var(--stone-800);
+  border: 1px solid var(--stone-700);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+.card h3 { font-size: 1rem; }
+.card p { color: var(--chalk-60); font-size: 0.92rem; }
+
+.btn {
+  display: inline-block;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 12px 22px;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+}
+.btn-primary { background: var(--hold); color: var(--stone-900); }
+.btn-primary:hover { background: var(--chalk-100); }
+.btn-secondary { background: transparent; color: var(--chalk-100); border: 1px solid var(--stone-700); }
+.btn-secondary:hover { border-color: var(--hold); color: var(--hold); }
+
+/* ---- Footer ------------------------------------------------------------ */
+.site-footer {
+  border-top: 1px solid var(--stone-700);
+  padding: 32px 0;
+  color: var(--chalk-60);
+  font-size: 0.85rem;
+}
+.site-footer .container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ---- Form elements (contact page, tools) ------------------------------ */
+label { display: block; font-size: 0.85rem; color: var(--chalk-60); margin-bottom: 6px; }
+input, textarea, select {
+  width: 100%;
+  background: var(--stone-800);
+  border: 1px solid var(--stone-700);
+  border-radius: var(--radius);
+  color: var(--chalk-100);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  padding: 10px 12px;
+}
+input:focus, textarea:focus, select:focus {
+  outline: 2px solid var(--hold);
+  outline-offset: 1px;
+}
+.field { margin-bottom: 18px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; }
+}

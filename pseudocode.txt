@@ -1,0 +1,60 @@
+pseudocode:
+julians climbing strength test:
+choose bodyweight
+
+crimping: choose edge size and kg lifted(if it was hanging, for 2 arm hanging do (amount of kg + bodyweight)/2 , for one arm do amount of kg + bodyweight. else if it was using edge lift, just take the kg lifted.) 
+calculate total points for crimping with: y=(0.5^(x/5)), where x= edge size, y = factor. total points = (y*kg)/bodyweight.
+
+pulling strength:
+choose one arm or 2 arm, and pick reps and extra weight.
+in a two-arm pull-up, each arm shares the total load moved (bodyweight + added weight): per-arm load = (bodyweight + added weight) / 2. In a one-arm pull-up, one arm carries the full load alone. Converting between them means doubling or halving that per-arm number.
+calculate 1rm from x rep max with %1RM = 80 + 20 × 2^((1 - x reps) / 2)
+total points = ((total weight lifted in estimated 1rm with 2 arms) / bodyweight)*10
+
+core strength:
+choose l sit or front lever ,and pick duration.
+for l sit, every second = 1 point
+for front lever every second = 10 points, however every second should be worth exponentialy less points after 3 seconds.
+total points = amount of points/10
+
+campus board strength:
+choose rung number a and rung number b,
+format: 1 to a to b
+where a is some number between 1 and y
+and b is some number between y and 11
+and a is not 1, a is not b.
+total points is determined using d1=a-1 , d2=b-a , total points = d1+d2 +min(d1,d2)
+
+
+
+
+  // ---------- TEST 1: crimping ----------
+  // y = sqrt(20/edge) where x = edge size, y = factor
+  // total = (kg/bw) * y * 1
+  // ---------- TEST 2: pulling ----------
+  // per-arm load: 2-arm = (bw+extra)/2, 1-arm = bw+extra
+  // %1RM = 80 + 20 * 2^((1-reps)/2)
+  // per-arm 1RM = per-arm load / (%1RM/100); total 2-arm 1RM = per-arm 1RM * 2
+  // score = ((total 2-arm 1RM / bw)**0.5) * 5
+  // ---------- TEST 3: core ----------
+  // L-sit: 1pt/sec. Front lever: 10pt/sec up to 3s, then exponentially diminishing.(per the following: if(type === 'lsit'){
+      raw = dur * 1;
+    } else {
+      const k = 0.15; // decay constant past 3s
+      if(dur <= 3){
+        raw = 10 * dur;
+      } else {
+        raw = 30 + (10/k) * (1 - Math.exp(-k * (dur - 3)));
+      }
+    })
+  // total score = (raw points / 10)*1.5
+  // ---------- TEST 4: campus ----------
+  //choose rung number a and rung number b,
+  //format: 1 to a to b
+  //where a is some number between 1 and y
+  //and b is some number between y and 11
+  //and a is not 1, a is not b.
+  //total points is determined using d1=a-1 , d2=b-a , total points = d1+d2 +min(d1,d2)
+
+
+ 

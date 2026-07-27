@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pull-Up 1RM Converter — Hard Sends</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+.tool-shell {
+  display: grid;
+  gap: 24px;
+}
+
+.converter-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 28px;
+}
+
+.panel {
+  display: grid;
+  gap: 20px;
+}
+
+.controls {
+  display: grid;
+  gap: 22px;
+}
+
+.field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.field label {
+  margin-bottom: 0;
+}
+
+.segmented {
+  display: flex;
+  gap: 4px;
+  background: var(--stone-900);
+  border: 1px solid var(--stone-700);
+  border-radius: var(--radius);
+  padding: 4px;
+}
+
+.seg {
+  flex: 1;
+  border: none;
+  border-radius: calc(var(--radius) - 2px);
+  background: transparent;
+  color: var(--chalk-60);
+  padding: 10px 12px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.seg.active {
+  background: var(--hold);
+  color: var(--stone-900);
+}
+
+.stepper {
+  display: flex;
+  align-items: stretch;
+  background: var(--stone-900);
+  border: 1px solid var(--stone-700);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.stepper button {
+  width: 46px;
+  min-width: 46px;
+  border: none;
+  background: transparent;
+  color: var(--chalk-100);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.stepper button:hover {
+  background: var(--stone-700);
+}
+
+.stepper input {
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+}
+
+.stepper input:focus {
+  outline: none;
+}
+
+.mono-input {
+  width: 100%;
+  font-family: var(--font-mono);
+}
+
+.unit-toggle {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--stone-900);
+  border: 1px solid var(--stone-700);
+  border-radius: var(--radius);
+  padding: 4px;
+}
+
+.unit {
+  border: none;
+  background: transparent;
+  color: var(--chalk-60);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 6px 10px;
+  border-radius: calc(var(--radius) - 2px);
+  cursor: pointer;
+}
+
+.unit.active {
+  background: var(--rope-blue);
+  color: var(--stone-900);
+}
+
+.hint {
+  font-size: 0.82rem;
+  color: var(--chalk-60);
+  margin: 8px 0 0;
+}
+
+.results {
+  display: grid;
+  gap: 18px;
+}
+
+.hero-number {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 6vw, 4.4rem);
+  line-height: 0.95;
+  margin: 0;
+}
+
+.hero-number.negative {
+  color: var(--tape-red);
+}
+
+.hero-unit {
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  color: var(--chalk-60);
+  margin-left: 8px;
+}
+
+.hero-caption {
+  margin: 10px 0 0;
+  color: var(--chalk-60);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stat {
+  background: var(--stone-900);
+  border: 1px solid var(--stone-700);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+
+.stat-label {
+  margin: 0 0 6px;
+  color: var(--chalk-60);
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.stat-value {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+}
+
+.error-box {
+  background: rgba(226, 87, 43, 0.1);
+  border: 1px solid rgba(226, 87, 43, 0.35);
+  color: var(--tape-red);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.lever {
+  margin-top: 4px;
+}
+
+.lever-label {
+  font-size: 0.82rem;
+  color: var(--chalk-60);
+  margin: 0 0 10px;
+}
+
+.lever svg,
+.curve-card svg {
+  width: 100%;
+  display: block;
+}
+
+.curve-card {
+  background: var(--stone-800);
+  border: 1px solid var(--stone-700);
+  border-radius: var(--radius);
+  padding: 24px 24px 20px;
+}
+
+.curve-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.curve-sub {
+  margin: 0;
+  color: var(--chalk-60);
+  font-size: 0.86rem;
+}
+
+.method {
+  background: var(--stone-800);
+  border: 1px solid var(--stone-700);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  color: var(--chalk-60);
+}
+
+.method summary {
+  cursor: pointer;
+  color: var(--chalk-100);
+  font-weight: 600;
+}
+
+.method ol {
+  margin: 14px 0 0;
+  padding-left: 20px;
+  line-height: 1.65;
+  font-size: 0.92rem;
+}
+
+.method strong {
+  color: var(--chalk-100);
+}
+
+.method code {
+  font-family: var(--font-mono);
+  background: var(--stone-900);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+@media (max-width: 960px) {
+  .converter-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field-label-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+</style>
+</head>
+<body>
+
+<script src="../navbar.js"></script>
+
+<main>
+  <section class="hero">
+    <div class="container">
+      <p class="eyebrow">Strength conversion tool</p>
+      <h1>Pull-Up <span style="color: var(--hold);">1RM</span> Converter</h1>
+      <p class="lede">
+        Enter a one-arm or two-arm pull-up set and get an estimated two-arm
+        one-rep max.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container tool-shell">
+      <div class="card converter-card">
+        <section class="panel controls" aria-label="Inputs">
+          <div class="field">
+            <label>Pull-up type</label>
+            <div class="segmented" id="armToggle">
+              <button type="button" data-mode="2" class="seg active">Two-Arm</button>
+              <button type="button" data-mode="1" class="seg">One-Arm</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="reps">Reps performed</label>
+            <div class="stepper">
+              <button type="button" id="repsDown" aria-label="Decrease reps">&minus;</button>
+              <input type="number" id="reps" value="5" min="1" max="20" inputmode="numeric" />
+              <button type="button" id="repsUp" aria-label="Increase reps">+</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label-row">
+              <label for="extraWeight">Added weight</label>
+              <div class="unit-toggle" id="unitToggle">
+                <button type="button" data-unit="kg" class="unit active">kg</button>
+                <button type="button" data-unit="lb" class="unit">lb</button>
+              </div>
+            </div>
+            <input type="number" id="extraWeight" value="0" step="0.5" class="mono-input" />
+            <p class="hint">Weight on the belt or vest. Use a negative number for band assistance.</p>
+          </div>
+
+          <div class="field">
+            <label for="bodyweight">Bodyweight</label>
+            <input type="number" id="bodyweight" value="80" step="0.5" class="mono-input" />
+          </div>
+        </section>
+
+        <section class="results" aria-label="Results">
+          <p class="eyebrow">Estimated two-arm 1RM</p>
+          <div id="resultBlock">
+            <div class="hero-number"><span id="heroValue">0</span><span class="hero-unit" id="heroUnit">kg</span></div>
+            <p class="hero-caption" id="heroCaption">Added weight for a single two-arm rep, on top of bodyweight.</p>
+
+            <div class="stat-grid">
+              <div class="stat">
+                <p class="stat-label">Total load</p>
+                <p class="stat-value" id="totalLoadValue">--</p>
+              </div>
+              <div class="stat">
+                <p class="stat-label">One-arm 1RM</p>
+                <p class="stat-value" id="oneArmValue">--</p>
+              </div>
+              <div class="stat">
+                <p class="stat-label">Percentage 1rm</p>
+                <p class="stat-value" id="pctValue">--</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="errorBlock" class="error-box" style="display:none;"></div>
+
+          <div class="lever">
+            <p class="lever-label">How the load splits per arm:</p>
+            <svg id="leverSvg" viewBox="0 0 480 84" preserveAspectRatio="xMidYMid meet"></svg>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="curve-card">
+        <div class="curve-head">
+          <p class="eyebrow">Reps &rarr; %1RM curve</p>
+          <p class="curve-sub">Fitted to 1 rep = 100% · 3 reps = 90% · 5 reps = 85%</p>
+        </div>
+        <svg id="curveSvg" viewBox="0 0 640 200" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <details class="method">
+        <summary>How this is calculated</summary>
+        <ol>
+          <li><strong>Arm-load split.</strong> In a two-arm pull-up, each arm shares the total load moved (bodyweight + added weight): per-arm load = (bodyweight + added weight) / 2. In a one-arm pull-up, one arm carries the full load alone. Converting between them means doubling or halving that per-arm number.</li>
+          <li><strong>Reps → %1RM.</strong> <code>%1RM = 80 + 20 × 2^((1 - reps) / 2)</code> — a curve solved to pass exactly through 1 rep/100%, 3 reps/90%, and 5 reps/85%, flattening out for higher reps.</li>
+          <li><strong>Estimate.</strong> Your total load is divided by that percentage to estimate a one-rep max in the arm-count you entered, then converted to a two-arm number using the split above.</li>
+        </ol>
+        <ol start="4">
+          <li>This assumes the set entered was close to maximal effort for that rep count. Submaximal sets will overstate the result.</li>
+        </ol>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span>© 2026 Hard Sends</span>
+    <span>Built for climbers, by climbers.</span>
+  </div>
+</footer>
+
+<script src="../main.js"></script>
+<script>
+(function(){
+  const KG_PER_LB = 0.45359237;
+
+  let mode = '2';
+  let unit = 'kg';
+
+  const armToggle = document.getElementById('armToggle');
+  const unitToggle = document.getElementById('unitToggle');
+  const repsInput = document.getElementById('reps');
+  const repsDown = document.getElementById('repsDown');
+  const repsUp = document.getElementById('repsUp');
+  const extraWeightInput = document.getElementById('extraWeight');
+  const bodyweightInput = document.getElementById('bodyweight');
+
+  const heroValue = document.getElementById('heroValue');
+  const heroUnit = document.getElementById('heroUnit');
+  const heroCaption = document.getElementById('heroCaption');
+  const heroNumberEl = document.querySelector('.hero-number');
+  const totalLoadValue = document.getElementById('totalLoadValue');
+  const oneArmValue = document.getElementById('oneArmValue');
+  const pctValue = document.getElementById('pctValue');
+  const resultBlock = document.getElementById('resultBlock');
+  const errorBlock = document.getElementById('errorBlock');
+  const leverSvg = document.getElementById('leverSvg');
+  const curveSvg = document.getElementById('curveSvg');
+
+  function pctFromReps(r){
+    return 80 + 20 * Math.pow(2, (1 - r) / 2);
+  }
+
+  function toKg(value){ return unit === 'kg' ? value : value * KG_PER_LB; }
+  function fromKg(value){ return unit === 'kg' ? value : value / KG_PER_LB; }
+
+  function fmt(kgValue){
+    const v = fromKg(kgValue);
+    const rounded = Math.round(v * 10) / 10;
+    const clean = Object.is(rounded, -0) ? 0 : rounded;
+    return (clean > 0 ? '+' : '') + clean.toFixed(1);
+  }
+  function fmtPlain(kgValue){
+    const v = fromKg(kgValue);
+    const rounded = Math.round(v * 10) / 10;
+    const clean = Object.is(rounded, -0) ? 0 : rounded;
+    return clean.toFixed(1);
+  }
+
+  function drawLever(totalLoadKg){
+    const W = 480, H = 84;
+    const barY = 22, barH = 34;
+    const padX = 10;
+    const barW = W - padX * 2;
+    let svg = '';
+
+    if (mode === '2'){
+      const perArm = totalLoadKg / 2;
+      const half = barW / 2;
+      svg += `<rect x="${padX}" y="${barY}" width="${half - 2}" height="${barH}" rx="6" fill="#C6903F"/>`;
+      svg += `<rect x="${padX + half + 2}" y="${barY}" width="${half - 2}" height="${barH}" rx="6" fill="#5E7F9C"/>`;
+      svg += `<text x="${padX + half/2}" y="${barY + barH/2 + 5}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" fill="#15171A">L arm</text>`;
+      svg += `<text x="${padX + half + 2 + half/2}" y="${barY + barH/2 + 5}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" fill="#15171A">R arm</text>`;
+      svg += `<text x="${padX + half/2}" y="${barY + barH + 20}" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" fill="#95999D">${fmtPlain(perArm)} ${unit}</text>`;
+      svg += `<text x="${padX + half + 2 + half/2}" y="${barY + barH + 20}" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" fill="#95999D">${fmtPlain(perArm)} ${unit}</text>`;
+    } else {
+      svg += `<rect x="${padX}" y="${barY}" width="${barW}" height="${barH}" rx="6" fill="#C6903F"/>`;
+      svg += `<text x="${W/2}" y="${barY + barH/2 + 5}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" fill="#15171A">working arm</text>`;
+      svg += `<text x="${W/2}" y="${barY + barH + 20}" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" fill="#95999D">${fmtPlain(totalLoadKg)} ${unit}</text>`;
+    }
+    leverSvg.innerHTML = svg;
+  }
+
+  function drawCurve(currentReps){
+    const W = 640, H = 200;
+    const padL = 46, padR = 16, padT = 16, padB = 34;
+    const rMin = 1, rMax = 20, yMin = 78, yMax = 100;
+    const x = r => padL + (r - rMin) / (rMax - rMin) * (W - padL - padR);
+    const y = p => padT + (yMax - p) / (yMax - yMin) * (H - padT - padB);
+
+    let svg = '';
+    [80,85,90,95,100].forEach(p => {
+      svg += `<line x1="${padL}" y1="${y(p)}" x2="${W - padR}" y2="${y(p)}" stroke="rgba(241,237,228,0.09)" stroke-width="1"/>`;
+      svg += `<text x="${padL - 10}" y="${y(p) + 4}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="11" fill="#6E7276">${p}%</text>`;
+    });
+    [1,5,10,15,20].forEach(r => {
+      svg += `<text x="${x(r)}" y="${H - padB + 20}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#6E7276">${r}</text>`;
+    });
+    svg += `<text x="${(padL + W - padR)/2}" y="${H - 4}" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#6E7276">reps</text>`;
+
+    let d = '';
+    for (let r = rMin; r <= rMax; r += 0.25){
+      const p = pctFromReps(r);
+      d += (r === rMin ? 'M' : 'L') + x(r).toFixed(2) + ',' + y(p).toFixed(2) + ' ';
+    }
+    svg += `<path d="${d}" fill="none" stroke="#C6903F" stroke-width="3" stroke-linecap="round"/>`;
+
+    const cr = Math.min(Math.max(currentReps, rMin), rMax);
+    const cp = Math.min(Math.max(pctFromReps(currentReps), yMin), yMax);
+    svg += `<circle cx="${x(cr)}" cy="${y(cp)}" r="6" fill="#F1EDE4" stroke="#C6903F" stroke-width="3"/>`;
+    svg += `<text x="${x(cr)}" y="${y(cp) - 14}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="#F1EDE4">${pctFromReps(currentReps).toFixed(1)}%</text>`;
+
+    curveSvg.innerHTML = svg;
+  }
+
+  function compute(){
+    const reps = Math.max(1, parseInt(repsInput.value, 10) || 1);
+    const extraRaw = parseFloat(extraWeightInput.value);
+    const bodyRaw = parseFloat(bodyweightInput.value);
+    const extraKg = toKg(isNaN(extraRaw) ? 0 : extraRaw);
+    const bodyKg = toKg(isNaN(bodyRaw) ? 0 : bodyRaw);
+
+    const totalLoadKg = bodyKg + extraKg;
+
+    drawCurve(reps);
+
+    if (bodyKg <= 0){
+      showError('Enter a bodyweight greater than zero.');
+      return;
+    }
+    if (totalLoadKg <= 0){
+      showError('Total load (bodyweight + added weight) must be greater than zero.');
+      return;
+    }
+
+    const pct = pctFromReps(reps);
+    const estSameConfigTotalLoadKg = totalLoadKg / (pct / 100);
+
+    let twoArmTotalLoadKg, oneArmTotalLoadKg;
+    if (mode === '2'){
+      twoArmTotalLoadKg = estSameConfigTotalLoadKg;
+      oneArmTotalLoadKg = twoArmTotalLoadKg / 2;
+    } else {
+      oneArmTotalLoadKg = estSameConfigTotalLoadKg;
+      twoArmTotalLoadKg = oneArmTotalLoadKg * 2;
+    }
+
+    const twoArmExtraKg = twoArmTotalLoadKg - bodyKg;
+    const oneArmExtraKg = oneArmTotalLoadKg - bodyKg;
+
+    showResults({
+      twoArmExtraKg, twoArmTotalLoadKg, oneArmExtraKg, pct
+    });
+
+    drawLever(totalLoadKg);
+  }
+
+  function showError(msg){
+    resultBlock.style.display = 'none';
+    errorBlock.style.display = 'block';
+    errorBlock.textContent = msg;
+    leverSvg.innerHTML = '';
+  }
+
+  function showResults(r){
+    resultBlock.style.display = 'block';
+    errorBlock.style.display = 'none';
+
+    heroValue.textContent = fmt(r.twoArmExtraKg);
+    heroUnit.textContent = unit;
+    heroNumberEl.classList.toggle('negative', r.twoArmExtraKg < 0);
+    heroCaption.textContent = r.twoArmExtraKg < 0
+      ? 'Negative means you would still need assistance to hit a strict two-arm bodyweight rep.'
+      : 'Added weight for a single two-arm rep, on top of bodyweight.';
+
+    totalLoadValue.textContent = fmtPlain(r.twoArmTotalLoadKg) + ' ' + unit;
+    oneArmValue.textContent = fmt(r.oneArmExtraKg) + ' ' + unit;
+    pctValue.textContent = r.pct.toFixed(1) + '%';
+  }
+
+  armToggle.addEventListener('click', (e) => {
+    const btn = e.target.closest('.seg');
+    if (!btn) return;
+    mode = btn.dataset.mode;
+    [...armToggle.querySelectorAll('.seg')].forEach(b => b.classList.toggle('active', b === btn));
+    compute();
+  });
+
+  unitToggle.addEventListener('click', (e) => {
+    const btn = e.target.closest('.unit');
+    if (!btn) return;
+    const newUnit = btn.dataset.unit;
+    if (newUnit === unit) return;
+
+    [extraWeightInput, bodyweightInput].forEach((input) => {
+      const val = parseFloat(input.value);
+      if (isNaN(val)) return;
+      const kg = toKg(val);
+      unit = newUnit;
+      input.value = (Math.round(fromKg(kg) * 10) / 10);
+    });
+
+    unit = newUnit;
+    [...unitToggle.querySelectorAll('.unit')].forEach(b => b.classList.toggle('active', b === btn));
+    compute();
+  });
+
+  repsDown.addEventListener('click', () => {
+    repsInput.value = Math.max(1, (parseInt(repsInput.value,10)||1) - 1);
+    compute();
+  });
+  repsUp.addEventListener('click', () => {
+    repsInput.value = Math.min(20, (parseInt(repsInput.value,10)||1) + 1);
+    compute();
+  });
+
+  [repsInput, extraWeightInput, bodyweightInput].forEach(input => {
+    input.addEventListener('input', compute);
+  });
+
+  compute();
+})();
+</script>
+</body>
+</html>

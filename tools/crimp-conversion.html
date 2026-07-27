@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crimp Conversion — Hard Sends</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+.tool-layout {
+  display: grid;
+  gap: 24px;
+}
+
+.tool-card {
+  display: grid;
+  gap: 20px;
+}
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.range-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.range-output {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--chalk-60);
+}
+
+.summary-bar {
+  background: var(--stone-900);
+  border: 1px solid var(--stone-700);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.summary-bar strong {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-family: var(--font-display);
+}
+
+.chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 320px;
+}
+
+.anchor-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.anchor-grid label {
+  margin-bottom: 4px;
+}
+
+.details-summary {
+  font-size: 0.85rem;
+  color: var(--chalk-60);
+  cursor: pointer;
+}
+
+.details-panel {
+  margin-top: 12px;
+}
+
+@media (max-width: 760px) {
+  .tool-grid,
+  .anchor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+</style>
+</head>
+<body>
+
+<script src="../navbar.js"></script>
+
+<main>
+  <section class="hero">
+    <div class="container">
+      <p class="eyebrow">Tool</p>
+      <h1>Crimp conversion</h1>
+      <p class="lede">
+        Estimate how much load you can move between edge depths using a
+        reference max, a target edge, and an adjustable strength curve.
+        For more accurate results, use a strict half-crimp position during
+        the lift. formula used: y=100(1−0.5^(x/5))
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container tool-layout">
+      <div class="card tool-card">
+        <div>
+          <h2>Calculator</h2>
+          <p class="lede">
+            Adjust the reference edge, your known max, and the target edge to
+            see an estimated load on the new depth.
+          </p>
+        </div>
+
+        <div class="tool-grid">
+          <div class="field">
+            <label for="refMm">Reference edge (mm)</label>
+            <input type="number" id="refMm" value="20" min="0" max="20" step="0.5" />
+          </div>
+          <div class="field">
+            <label for="refKg">Your max on it (kg)</label>
+            <input type="number" id="refKg" value="60" min="0" step="0.5" />
+          </div>
+        </div>
+
+        <div>
+          <div class="range-row">
+            <label for="targetMm">Target edge (mm)</label>
+            <span class="range-output" id="targetMmOut">10 mm</span>
+          </div>
+          <input type="range" id="targetMm" min="0" max="20" step="0.5" value="10" />
+        </div>
+
+        <div class="summary-bar">
+          <span>Estimated max on target edge</span>
+          <strong id="resultKg">34 kg</strong>
+        </div>
+
+        <div class="chart-wrap">
+          <canvas id="curveChart" role="img" aria-label="Line chart of estimated strength percentage versus edge depth, with markers showing the reference and target edge points">Strength curve from 0 to 20mm</canvas>
+        </div>
+
+        <details>
+          <summary class="details-summary">Edit the underlying curve (anchor points)</summary>
+          <div class="details-panel">
+            <div class="anchor-grid">
+              <div>
+                <label for="a0">0mm</label>
+                <input type="number" id="a0" value="0" min="0" max="100" />
+              </div>
+              <div>
+                <label for="a5">5mm</label>
+                <input type="number" id="a5" value="50" min="0" max="100" />
+              </div>
+              <div>
+                <label for="a10">10mm</label>
+                <input type="number" id="a10" value="75" min="0" max="100" />
+              </div>
+              <div>
+                <label for="a15">15mm</label>
+                <input type="number" id="a15" value="87.5" min="0" max="100" />
+              </div>
+              <div>
+                <label for="a20">20mm</label>
+                <input type="number" id="a20" value="93.75" min="0" max="100" />
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span>© 2026 Hard Sends</span>
+    <span>Built for climbers, by climbers.</span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="../main.js"></script>
+<script>
+function createInterpolant(xs, ys) {
+  var length = xs.length;
+  var indexes = [];
+  for (var i = 0; i < length; i++) indexes.push(i);
+  indexes.sort(function(a, b) { return xs[a] < xs[b] ? -1 : 1; });
+  var oldXs = xs, oldYs = ys;
+  xs = []; ys = [];
+  for (i = 0; i < length; i++) { xs.push(oldXs[indexes[i]]); ys.push(oldYs[indexes[i]]); }
+  var dys = [], dxs = [], ms = [];
+  for (i = 0; i < length - 1; i++) {
+    var dx = xs[i+1]-xs[i], dy = ys[i+1]-ys[i];
+    dxs.push(dx); dys.push(dy); ms.push(dy/dx);
+  }
+  var c1s = [ms[0]];
+  for (i = 0; i < dxs.length - 1; i++) {
+    var m = ms[i], mNext = ms[i+1];
+    if (m*mNext <= 0) { c1s.push(0); }
+    else {
+      var dx_ = dxs[i], dxNext = dxs[i+1], common = dx_+dxNext;
+      c1s.push(3*common/((common+dxNext)/m + (common+dx_)/mNext));
+    }
+  }
+  c1s.push(ms[ms.length-1]);
+  var c2s = [], c3s = [];
+  for (i = 0; i < c1s.length - 1; i++) {
+    var c1 = c1s[i], m_ = ms[i], invDx = 1/dxs[i], common_ = c1 + c1s[i+1] - m_ - m_;
+    c2s.push((m_-c1-common_)*invDx);
+    c3s.push(common_*invDx*invDx);
+  }
+  return function(x) {
+    var n = xs.length - 1;
+    if (x <= xs[0]) x = xs[0];
+    if (x >= xs[n]) return ys[n];
+    var low = 0, high = c3s.length - 1, mid;
+    while (low <= high) {
+      mid = Math.floor(0.5*(low+high));
+      var xHere = xs[mid];
+      if (xHere < x) low = mid+1;
+      else if (xHere > x) high = mid-1;
+      else return ys[mid];
+    }
+    var idx = Math.max(0, high);
+    var diff = x - xs[idx], diffSq = diff*diff;
+    return ys[idx] + c1s[idx]*diff + c2s[idx]*diffSq + c3s[idx]*diff*diffSq;
+  };
+}
+
+let chart;
+function getAnchors() {
+  return {
+    xs: [0, 5, 10, 15, 20],
+    ys: [
+      parseFloat(document.getElementById('a0').value) || 0,
+      parseFloat(document.getElementById('a5').value) || 0,
+      parseFloat(document.getElementById('a10').value) || 0,
+      parseFloat(document.getElementById('a15').value) || 0,
+      parseFloat(document.getElementById('a20').value) || 0
+    ]
+  };
+}
+
+function recompute() {
+  const { xs, ys } = getAnchors();
+  const interp = createInterpolant(xs, ys);
+
+  const refMm = parseFloat(document.getElementById('refMm').value) || 0;
+  const refKg = parseFloat(document.getElementById('refKg').value) || 0;
+  const targetMm = parseFloat(document.getElementById('targetMm').value) || 0;
+  document.getElementById('targetMmOut').textContent = targetMm.toFixed(1) + ' mm';
+
+  const refPct = Math.max(interp(refMm), 0.001);
+  const targetPct = interp(targetMm);
+  const estimatedKg = refKg * (targetPct / refPct);
+  document.getElementById('resultKg').textContent = estimatedKg.toFixed(1) + ' kg';
+
+  const curveLabels = [];
+  const curveData = [];
+  for (let mm = 0; mm <= 20; mm += 0.5) {
+    curveLabels.push(mm);
+    curveData.push(Math.round(interp(mm) * 10) / 10);
+  }
+
+  const markerData = curveLabels.map((mm) => {
+    if (Math.abs(mm - refMm) < 0.26) return Math.round(interp(refMm) * 10) / 10;
+    if (Math.abs(mm - targetMm) < 0.26) return Math.round(interp(targetMm) * 10) / 10;
+    return null;
+  });
+
+  if (!chart) {
+    chart = new Chart(document.getElementById('curveChart'), {
+      type: 'line',
+      data: {
+        labels: curveLabels,
+        datasets: [
+          {
+            label: 'Curve',
+            data: curveData,
+            borderColor: '#2a78d6',
+            backgroundColor: 'rgba(42,120,214,0.08)',
+            fill: true,
+            borderWidth: 2,
+            pointRadius: 0,
+            tension: 0
+          },
+          {
+            label: 'Markers',
+            data: markerData,
+            borderWidth: 0,
+            pointRadius: 6,
+            pointBackgroundColor: '#eb6834',
+            pointBorderColor: '#fcfcfb',
+            pointBorderWidth: 2,
+            showLine: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            title: { display: true, text: 'Edge depth (mm)', color: '#898781' },
+            grid: { display: false },
+            ticks: { color: '#898781', callback: (v, i) => (curveLabels[i] % 5 === 0 ? curveLabels[i] : '') }
+          },
+          y: {
+            title: { display: true, text: '% of reference max', color: '#898781' },
+            min: 0, max: 105,
+            grid: { color: '#e1e0d9' },
+            ticks: { color: '#898781', callback: (v) => v + '%' }
+          }
+        }
+      }
+    });
+  } else {
+    chart.data.labels = curveLabels;
+    chart.data.datasets[0].data = curveData;
+    chart.data.datasets[1].data = markerData;
+    chart.update();
+  }
+}
+
+['refMm', 'refKg', 'targetMm', 'a0', 'a5', 'a10', 'a15', 'a20'].forEach((id) => {
+  document.getElementById(id).addEventListener('input', recompute);
+});
+recompute();
+</script>
+</body>
+</html>

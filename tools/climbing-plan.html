@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bouldering Training Scheme Generator — Hard Sends</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+.tool-shell {
+  display: grid;
+  gap: 24px;
+}
+
+.generator-card {
+  display: grid;
+  gap: 20px;
+}
+
+.generator-controls {
+  display: grid;
+  gap: 18px;
+}
+
+.control-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.value {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: var(--hold);
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--hold);
+}
+
+.ticks {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--chalk-60);
+}
+
+.ticks .active {
+  color: var(--hold);
+}
+
+.plan {
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--stone-700);
+  background: var(--stone-800);
+}
+
+.plan-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, var(--rope-blue), var(--hold-dim));
+  color: var(--stone-900);
+}
+
+.badge {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.95rem;
+}
+
+.freq-note {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  padding: 20px;
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px;
+  border-radius: var(--radius);
+  background: var(--stone-900);
+  border: 1px solid var(--stone-700);
+}
+
+.day.climb {
+  border-color: color-mix(in srgb, var(--hold) 40%, var(--stone-700));
+  background: color-mix(in srgb, var(--hold) 12%, var(--stone-900));
+}
+
+.d-name {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--chalk-60);
+  text-transform: uppercase;
+}
+
+.d-state {
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.day.climb .d-state {
+  color: var(--hold);
+}
+
+.day.rest .d-state {
+  color: var(--chalk-60);
+}
+
+.stats {
+  display: grid;
+  gap: 0;
+  padding: 0 20px 16px;
+}
+
+.stat {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--stone-700);
+}
+
+.stat:last-child {
+  border-bottom: none;
+}
+
+.stat-label {
+  color: var(--chalk-60);
+  font-size: 0.9rem;
+}
+
+.stat-val {
+  font-weight: 600;
+  text-align: right;
+}
+
+.breakdown {
+  padding: 0 20px 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.bd-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--chalk-100);
+  margin: 10px 0 0;
+}
+
+.bd-item {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--chalk-60);
+  background: var(--stone-900);
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border-left: 3px solid var(--hold);
+}
+
+.bd-item strong {
+  color: var(--chalk-100);
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tip {
+  margin: 0;
+  padding: 16px 20px 20px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--chalk-60);
+  border-top: 1px solid var(--stone-700);
+}
+
+.tip strong {
+  color: var(--chalk-100);
+}
+
+@media (max-width: 760px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .plan-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+</style>
+</head>
+<body>
+
+<script src="../navbar.js"></script>
+
+<main>
+  <section class="hero">
+    <div class="container">
+      <p class="eyebrow">Beta</p>
+      <h1>Bouldering Training Scheme</h1>
+      <p class="lede">Set your week, effort, and training phase, then get a session plan tuned to it.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container tool-shell">
+      <div class="card generator-card">
+        <div>
+          <h2>Generator</h2>
+          <p class="lede">Use the sliders below to build a weekly bouldering plan with a clear focus, work volume, and recovery structure.</p>
+        </div>
+
+        <div class="generator-controls">
+          <div class="control">
+            <div class="control-head"><label for="freq">Sessions / Week</label><span id="freqVal" class="value">4</span></div>
+            <input type="range" id="freq" min="1" max="7" step="1" value="4">
+          </div>
+
+          <div class="control">
+            <div class="control-head"><label for="intensity">Intensity (RPE)</label><span id="intensityVal" class="value">5/10</span></div>
+            <input type="range" id="intensity" min="1" max="10" step="1" value="5">
+          </div>
+
+          <div class="control">
+            <div class="control-head"><label for="phase">Phase</label><span id="phaseVal" class="value">Volume</span></div>
+            <input type="range" id="phase" min="0" max="3" step="1" value="0">
+            <div class="ticks">
+              <span>Volume</span><span>Strength</span><span>Power</span><span>Deload</span>
+            </div>
+          </div>
+        </div>
+
+        <section id="plan" class="plan"></section>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span>© 2026 Hard Sends</span>
+    <span>Built for climbers, by climbers.</span>
+  </div>
+</footer>
+
+<script src="../main.js"></script>
+<script>
+  const PHASES = [
+    {
+      label: 'Volume',
+      tag: 'Mileage',
+      color: '#5E9C82',
+      focus: 'Volume & technique',
+      baseEffort: 55,
+      effortPerRPE: 3,
+      baseAttempts: 22,
+      attemptsPerRPE: 2,
+      rest: '60–90 sec between problems',
+      tip: 'Climb lots of moderate problems below your limit. Prioritize clean movement over sending hard.',
+      warmup: '10 min light cardio (jump rope/jog), followed by 15 min of easy traversing focusing on precise footwork.',
+      main: 'High volume of moderate climbs. Try to complete boulders on the first attempt (flash level) with perfect technique.',
+      strength: 'High-rep, low-intensity core work (e.g., 3 sets of 15-20 crunches) and antagonist push-ups.',
+      cooldown: '10 min of continuous, very easy down-climbing on vertical terrain.',
+      stretching: 'Forearm flexor/extensor stretches and hip openers for 10-15 minutes.'
+    },
+    {
+      label: 'Strength',
+      tag: 'Limit',
+      color: '#C97C2E',
+      focus: 'Maximum strength',
+      baseEffort: 75,
+      effortPerRPE: 2.5,
+      baseAttempts: 4,
+      attemptsPerRPE: 0.5,
+      rest: '3–5 min between attempts',
+      tip: 'Work boulders near your limit for a few high-quality attempts. Stop once movement gets sloppy.',
+      warmup: '10 min cardio, 20 min progressive bouldering from easy to moderate, including 2-3 harder primer moves.',
+      main: 'Projecting boulders at or slightly above your limit. Focus on complex, heavy-pulling movements.',
+      strength: 'Max hangs on a fingerboard (e.g., 10-sec hangs, 3 min rest) and heavy pull-ups/weighted pull-ups.',
+      cooldown: '5 min very light traversing to flush the forearms.',
+      stretching: 'Gentle antagonist stretching (chest, triceps, shoulders) to prevent tightening.'
+    },
+    {
+      label: 'Power',
+      tag: 'Explosive',
+      color: '#C1443C',
+      focus: 'Explosive power',
+      baseEffort: 80,
+      effortPerRPE: 2,
+      baseAttempts: 3,
+      attemptsPerRPE: 0.3,
+      rest: '3–5 min, full recovery',
+      tip: 'Go for big, dynamic moves or campus work. Quality over quantity — stop at the first sign of fatigue.',
+      warmup: 'Dynamic stretching, jumping jacks, and fast-paced easy bouldering to prime the nervous system.',
+      main: 'Dynos, deadpoints, and aggressive coordination moves. Keep attempts short and highly explosive.',
+      strength: 'Campus board ladders (if experienced) or plyometric exercises (box jumps, explosive pull-ups).',
+      cooldown: 'Active recovery—walk around the gym, let the heart rate drop naturally.',
+      stretching: 'Full-body static stretching, prioritizing lat and shoulder mobility.'
+    },
+    {
+      label: 'Deload',
+      tag: 'Recovery',
+      color: '#5B7A93',
+      focus: 'Active recovery',
+      baseAttempts: 12,
+      attemptsPerRPE: 0.5,
+      baseEffort: 35,
+      effortPerRPE: 0.5,
+      rest: 'as needed, stay fresh',
+      tip: 'Keep it light and playful this week. It rebuilds you for the next block, not tests you.',
+      warmup: '15 min long, gentle warmup. Deep breathing, slow joint rotations, and walking.',
+      main: 'Light, playful climbing well below your limit. Focus on flow, breathing, and trying quirky, low-intensity sets.',
+      strength: 'Light mobility and stability work only (e.g., bodyweight squats, banded pull-aparts). No heavy lifting.',
+      cooldown: '5 min of gentle cycling or walking.',
+      stretching: 'Deep, relaxing yoga-style stretching for 15-20 minutes.'
+    }
+  ];
+
+  const el = (id) => document.getElementById(id);
+  const freq = el('freq');
+  const intensity = el('intensity');
+  const phaseSlider = el('phase');
+  const ticks = document.querySelectorAll('.ticks span');
+  const planEl = el('plan');
+  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  function weeklyPattern(n) {
+    const days = Array(7).fill(false);
+    if (n >= 7) return days.fill(true);
+    const step = 7 / n;
+    let pos = 0;
+    for (let i = 0; i < n; i++) {
+      let idx = Math.round(pos) % 7;
+      while (days[idx]) idx = (idx + 1) % 7;
+      days[idx] = true;
+      pos += step;
+    }
+    return days;
+  }
+
+  function render() {
+    const n = +freq.value;
+    const rpe = +intensity.value;
+    const phase = PHASES[+phaseSlider.value];
+
+    el('freqVal').textContent = n;
+    el('intensityVal').textContent = rpe + '/10';
+    el('phaseVal').textContent = phase.label;
+    ticks.forEach((t, i) => t.classList.toggle('active', i === +phaseSlider.value));
+    document.documentElement.style.setProperty('--accent', phase.color);
+
+    const effort = Math.round(phase.baseEffort + (rpe - 5) * phase.effortPerRPE);
+    const attempts = Math.round(phase.baseAttempts + rpe * phase.attemptsPerRPE);
+    const weeklyVolume = attempts * n;
+
+    const gridHTML = weeklyPattern(n).map((climb, i) => `
+      <div class="day ${climb ? 'climb' : 'rest'}">
+        <span class="d-name">${dayNames[i]}</span>
+        <span class="d-state">${climb ? 'Climb' : 'Rest'}</span>
+      </div>`).join('');
+
+    planEl.innerHTML = `
+      <div class="plan-top">
+        <span class="badge">${phase.label} · ${phase.tag}</span>
+        <span class="freq-note">${n}× / week</span>
+      </div>
+      <div class="grid">${gridHTML}</div>
+      <div class="stats">
+        <div class="stat"><span class="stat-label">Focus</span><span class="stat-val">${phase.focus}</span></div>
+        <div class="stat"><span class="stat-label">Target effort</span><span class="stat-val">${effort}%</span></div>
+        <div class="stat"><span class="stat-label">Problems / session</span><span class="stat-val">${attempts}</span></div>
+        <div class="stat"><span class="stat-label">Rest</span><span class="stat-val">${phase.rest}</span></div>
+        <div class="stat"><span class="stat-label">Weekly volume</span><span class="stat-val">${weeklyVolume} problems</span></div>
+      </div>
+
+      <div class="breakdown">
+        <h3 class="bd-title">Climb Day Protocol</h3>
+        <div class="bd-item"><strong>Warmup</strong>${phase.warmup}</div>
+        <div class="bd-item"><strong>Main Session</strong>${phase.main}</div>
+        <div class="bd-item"><strong>Strength Training</strong>${phase.strength}</div>
+        <div class="bd-item"><strong>Cool Down</strong>${phase.cooldown}</div>
+        <div class="bd-item"><strong>Stretching</strong>${phase.stretching}</div>
+      </div>
+
+      <p class="tip"><strong>Coach's note —</strong> ${phase.tip}</p>
+    `;
+  }
+
+  [freq, intensity, phaseSlider].forEach((input) => input.addEventListener('input', render));
+  render();
+</script>
+</body>
+</html>
